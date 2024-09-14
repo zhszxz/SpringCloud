@@ -1,0 +1,60 @@
+server:
+  port: 9527
+
+spring:
+  application:
+    name: cloud-gateway #以微服务注册进consul或nacos服务列表内
+  cloud:
+    consul: #配置consul地址
+      host: localhost
+      port: 8500
+      discovery:
+        prefer-ip-address: true
+        service-name: ${spring.application.name}
+    gateway:
+      routes:
+        - id: pay_routh1 #pay_routh1                #路由的ID(类似mysql主键ID)，没有固定规则但要求唯一，建议配合服务名
+          #uri: http://localhost:8001                #匹配后提供服务的路由地址
+          uri: lb://cloud-payment-service                #通过微服务名动态获取ip和端口，支持负载均衡
+          predicates:
+            - Path=/pay/gateway/get/**              # 断言，路径相匹配的进行路由
+#            - After=2024-09-10T10:45:18.101564+08:00[Asia/Shanghai] #After Route Predicate，指定时间之后可以访问
+#            - Before=2024-09-10T10:50:18.101564+08:00[Asia/Shanghai] #Before Route Predicate，指定时间之前可以访问
+#            - Between=2024-09-10T10:58:13.586918800+08:00[Asia/Shanghai],2024-09-10T10:59:13.586918800+08:00[Asia/Shanghai] #Between Route Predicate，指定时间之间可以访问
+#            - Cookie=username,zhangsan  #Cookie Route Predicate，请求头要带有指定cookie
+#            - Header=X-Request-Id, \d+  #Header Route Predicate 请求头要有X-Request-Id属性并且值为整数
+#            - Host=**.atguigu.com  #Host Route Predicate 请求头要带有匹配的主机地址
+#            - Query=userId, \d+  #Query Route Predicate 要有参数名userId并且值还要是整数才能路由
+#            - RemoteAddr=192.168.186.1/24 #RemoteAddr Route Predicate 外部访问我的IP限制，最大跨度不超过32，目前是1~24它们是 CIDR 表示法。
+#            - Method=GET,POST #Method Route Predicate 只有指定的请求方式才会被路由
+#            - My=gold
+#                - name: My
+#                args:
+#                  userType: gold
+
+        - id: pay_routh2 #pay_routh2                #路由的ID(类似mysql主键ID)，没有固定规则但要求唯一，建议配合服务名
+          #uri: http://localhost:8001                #匹配后提供服务的路由地址
+          uri: lb://cloud-payment-service
+          predicates:
+            - Path=/pay/gateway/info/**              # 断言，路径相匹配的进行路由
+
+        - id: pay_routh3 #pay_routh3
+          uri: lb://cloud-payment-service                #匹配后提供服务的路由地址
+          predicates:
+            - Path=/pay/gateway/filter/**              # 断言，路径相匹配的进行路由
+            #- Path=/gateway/filter/**              # 断言，对外暴露的访问地址，去掉/pay
+            #- Path=/XYZ/abc/{segment}           # 断言，为配合SetPath测试，{segment}为占位符，捕获请求路径中的动态部分
+          filters: #gateway过滤器
+#            - AddRequestHeader=X-Request-atguigu1,atguiguValue1  #向请求头添加键值对，若一头含有多参则重写一行设置
+#            - AddRequestHeader=X-Request-atguigu2,atguiguValue2
+#            - RemoveRequestHeader=postman-token #删除请求头的键值对
+#            - SetRequestHeader=host, Legion-r7000 #修改请求头键值对
+#            - AddRequestParameter=customerId,9527001 #若传来的请求参数不包含customerId则新增
+#            - RemoveRequestParameter=customerName   # 删除请求参数customerName，你传递过来也是null
+#            - AddResponseHeader=X-Response-atguigu, BlueResponse # 新增请求参数X-Response-atguigu并设值为BlueResponse
+#            - SetResponseHeader=Date,2099-11-11 # 修改回应头Date值为2099-11-11
+#            - RemoveResponseHeader=Content-Type # 将默认自带Content-Type回应属性删除
+#            - PrefixPath=/pay # 给- Path加上前缀，组成真实访问地址
+#            - SetPath=/pay/gateway/{segment}  #若请求路径为/XYZ/abc/123，则经过网关时修改为/pay/gateway/123
+#            - RedirectTo=302, http://www.atguigu.com/ # 访问http://localhost:9527/pay/gateway/filter跳转到http://www.atguigu.com/
+            - My=atguigu
